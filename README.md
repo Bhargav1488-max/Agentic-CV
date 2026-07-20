@@ -214,16 +214,56 @@ Open **http://localhost:8501** in your browser.
 
 ## 🐳 Docker Commands
 
+## 🐳 Docker Commands
+
 | Command | Description |
 |---|---|
-| `docker compose up -d --build` | 🔨 Build image + start container |
+| `docker compose up -d --build` | 🔨 Build image and start container |
 | `docker compose up -d` | ▶️ Start container (without rebuilding) |
-| `docker compose down` | ⏹️ Stop and remove container |
+| `docker compose start` | ▶️ Start existing stopped container |
+| `docker compose stop` | ⏸️ Stop container (keep container and data) |
+| `docker compose down` | ⏹️ Stop and remove container and network |
 | `docker compose restart` | 🔄 Restart container |
 | `docker compose logs -f` | 📜 Follow live logs |
-| `docker compose logs --tail 50` | 📜 View last 50 log lines |
+| `docker compose logs --tail 50` | 📜 View the last 50 log lines |
+| `docker compose ps` | 📋 List Docker Compose services and their status |
 | `docker ps` | 📋 List running containers |
-| `docker exec -it job-app-assistant bash` | 🖥️ Shell into the container |
+| `docker ps -a` | 📋 List all containers (running and stopped) |
+| `docker exec -it job-app-assistant bash` | 🖥️ Open a shell inside the running container |
+| `docker compose pull` | ⬇️ Pull the latest image(s) from the registry |
+| `docker compose build` | 🔨 Build image(s) without starting containers |
+| `docker compose config` | ⚙️ Validate and display the Compose configuration |
+| `docker compose images` | 🖼️ List images used by the Compose project |
+| `docker image ls` | 🖼️ List all local Docker images |
+| `docker system df` | 💾 Show Docker disk usage |
+| `docker system prune` | 🧹 Remove unused containers, networks, and dangling images |
+| `docker compose down --volumes` | 🗑️ Stop and remove containers, networks, and volumes |
+| `docker compose down --rmi all` | 🗑️ Stop containers and remove all associated images |
+
+### Typical Development Workflow
+
+```bash
+# Build the image and start the application
+docker compose up -d --build
+
+# Stop the application (keep the container)
+docker compose stop
+
+# Start the existing container again
+docker compose start
+
+# Restart the application
+docker compose restart
+
+# View live logs
+docker compose logs -f
+
+# Open a shell inside the container
+docker exec -it job-app-assistant bash
+
+# Stop and remove the application
+docker compose down
+```
 
 ### 🏗️ Docker Architecture
 
