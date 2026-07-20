@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     texlive-fonts-recommended \
     texlive-fonts-extra \
     texlive-lang-french \
+    lmodern \
     latexmk \
     curl \
     ca-certificates \
@@ -22,12 +23,12 @@ WORKDIR /app
 # ---- Stage 2: Python dependencies ----
 FROM base AS builder
 COPY requirements.txt .
-RUN pip install --user -r requirements.txt
+RUN pip install -r requirements.txt
 
 # ---- Stage 3: Runtime ----
 FROM base AS runtime
-COPY --from=builder /root/.local /root/.local
-ENV PATH=/root/.local/bin:$PATH
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code
 COPY . /app

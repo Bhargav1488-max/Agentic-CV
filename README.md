@@ -11,16 +11,17 @@
 
 ---
 
-**AgenticCV** is a powerful, self-hosted AI engine that dynamically tailors your Master CV and Cover Letter to any Job Description in seconds. Powered by multi-agent architectures and multiple LLM providers (Azure OpenAI, GPT-4, Groq, Gemini), it guarantees high ATS matching, flawless LaTeX compilation, and real-time semantic analysis.
+**AgenticCV** is a powerful, self-hosted AI engine that dynamically tailors your Master CV and Cover Letter to any Job Description in seconds. Powered by multi-agent architectures and multiple LLM providers, it delivers high ATS matching, flawless LaTeX-compiled PDFs, and real-time semantic analysis.
 
 ## ✨ Features
 
-- 🧠 **Multi-LLM Engine:** Native support for Azure OpenAI, OpenAI, Anthropic, Google Gemini, Groq, Cohere, Mistral, and local Ollama models.
-- 📄 **LaTeX Compilation Pipeline:** Generates perfect, professional, and deterministic PDFs by compiling dynamic JSON outputs directly into LaTeX `\role` templates.
-- 📊 **Real-Time ATS Scoring:** Built-in Applicant Tracking System simulator that scores your tailored CV, identifies missing keywords, and provides actionable recommendations.
-- 🎯 **Surgical Tailoring:** UI toggles allow you to choose exactly which sections to modify (Title, Summary, Skills, Experience) while preserving historical accuracy.
-- 🕸️ **Automated JD Scraping:** Paste a job description or provide a URL to automatically scrape and parse the role requirements.
-- 🐳 **Cloud-Native & Dockerized:** Ready to deploy anywhere—Streamlit Cloud, Hugging Face Spaces, Render, AWS, or your local machine.
+- 🧠 **Multi-LLM Engine** — Native support for Google Gemini, Groq, GitHub Models, NVIDIA NIM, OpenRouter, Cohere, and Azure OpenAI.
+- 📄 **LaTeX PDF Pipeline** — Generates professional, deterministic PDFs by compiling dynamic JSON outputs directly into LaTeX templates.
+- 📊 **Real-Time ATS Scoring** — Built-in Applicant Tracking System simulator that scores your tailored CV, identifies missing keywords, and provides actionable recommendations.
+- 🎯 **Surgical Tailoring** — UI toggles let you choose exactly which sections to modify (Title, Summary, Skills, Experience) while preserving historical accuracy.
+- 🕸️ **Automated JD Scraping** — Paste a job description or provide a URL to automatically scrape and parse the role requirements.
+- ✉️ **Cover Letter Generation** — Generates tailored cover letters compiled to professional PDF format.
+- 🐳 **Dockerized** — One command to build and run. No local LaTeX installation needed.
 
 ## 🏗️ Architecture
 
@@ -33,7 +34,7 @@ graph TD;
     C --> D
     
     D -->|Strict JSON Schema| E[(Multi-LLM Engine)]
-    E -.->|Azure OpenAI / Groq / Gemini| D
+    E -.->|Gemini / Groq / GPT-4o / etc.| D
     
     D -->|Tailored CV JSON| F[LaTeX Generator]
     D -->|Cover Letter Text| F
@@ -45,58 +46,134 @@ graph TD;
     H -->|Score & Keywords| A
 ```
 
-## 🚀 Getting Started (Local Development)
+## 🚀 Quick Start
 
-### Prerequisites
-- Python 3.10+
-- A working LaTeX distribution (e.g., [TeX Live](https://tug.org/texlive/) or [MiKTeX](https://miktex.org/)) installed and added to your system PATH.
+### Option 1: Docker (Recommended)
 
-### 1. Clone the repository
+The fastest way to get up and running — no Python or LaTeX installation needed.
+
+**Prerequisites:** [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
 ```bash
+# Clone the repository
 git clone https://github.com/Bhargav1488-max/AgenticCV.git
 cd AgenticCV
+
+# Build and start
+docker compose up -d --build
 ```
 
-### 2. Set up the virtual environment
+Open **http://localhost:8501** in your browser.
+
+#### Docker Commands Reference
+
+| Command | Description |
+|---|---|
+| `docker compose up -d --build` | Build image and start container |
+| `docker compose up -d` | Start without rebuilding |
+| `docker compose down` | Stop and remove container |
+| `docker compose logs -f` | Follow live logs |
+| `docker compose restart` | Restart container |
+
+### Option 2: Local Development
+
+**Prerequisites:**
+- Python 3.10+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (for LaTeX PDF compilation) **or** a local LaTeX distribution ([TeX Live](https://tug.org/texlive/) / [MiKTeX](https://miktex.org/))
+
 ```bash
+# Clone the repository
+git clone https://github.com/Bhargav1488-max/AgenticCV.git
+cd AgenticCV
+
+# Set up virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows use `.\venv\Scripts\activate`
-pip install -r requirements.txt
-```
 
-### 3. Run the Application
-```bash
+# Activate (choose your OS)
+source venv/bin/activate        # macOS / Linux
+.\venv\Scripts\activate         # Windows
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the app
 streamlit run app.py
 ```
 
-## 🐳 Docker Deployment
+Open **http://localhost:8501** in your browser.
 
-To deploy AgenticCV on any server or cloud provider with zero LaTeX configuration overhead:
+> **Note:** When running locally without a LaTeX distribution installed, AgenticCV automatically delegates PDF compilation to the Docker container. Just make sure `docker compose up -d --build` has been run at least once.
 
-```bash
-# Build the image
-docker build -t agentic-cv .
+## 📁 Project Structure
 
-# Run the container
-docker run -p 8501:8501 agentic-cv
 ```
-Access the application at `http://localhost:8501`.
+AgenticCV/
+├── app.py                  # Streamlit entrypoint
+├── config.yaml             # LLM providers & app settings
+├── requirements.txt        # Python dependencies
+├── Dockerfile              # Multi-stage Docker build
+├── docker-compose.yml      # Container orchestration
+├── .env.example            # Environment variable template
+├── modules/
+│   ├── llm_engine.py       # Multi-LLM orchestrator
+│   ├── cv_parser.py        # PDF/DOCX CV parser
+│   ├── jd_scraper.py       # Job description scraper
+│   ├── latex_generator.py  # LaTeX template engine
+│   ├── latex_compiler.py   # PDF compilation (local + Docker fallback)
+│   ├── ats_scorer.py       # ATS semantic matching
+│   ├── prompts.py          # LLM prompt templates
+│   ├── config_loader.py    # YAML config loader
+│   ├── history_manager.py  # Session history
+│   └── utils.py            # Shared utilities
+├── ui/
+│   ├── sidebar.py          # Settings sidebar
+│   ├── tab_tailor.py       # CV tailoring tab
+│   ├── tab_manual.py       # Manual CV builder
+│   ├── tab_ats.py          # ATS scoring tab
+│   ├── tab_cv_preview.py   # CV preview tab
+│   ├── tab_cover_letter.py # Cover letter tab
+│   └── tab_history.py      # History tab
+├── output/                 # Generated PDFs & .tex files
+└── data/                   # Uploaded CVs & scraped JDs
+```
 
 ## ⚙️ Configuration
 
-You can configure your API keys directly within the UI Sidebar, or set them as environment variables to skip manual entry:
+### LLM API Keys
 
-```env
-AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
-AZURE_OPENAI_API_VERSION=2024-02-01
-OPENAI_API_KEY=sk-...
-GROQ_API_KEY=gsk_...
-GEMINI_API_KEY=AIza...
-```
+Configure your API keys in the **UI Sidebar** at runtime, or set them as environment variables:
+
+| Variable | Provider |
+|---|---|
+| `GOOGLE_API_KEY` | Google Gemini |
+| `GROQ_API_KEY` | Groq |
+| `GITHUB_TOKEN` | GitHub Models |
+| `NVIDIA_API_KEY` | NVIDIA NIM |
+| `OPENROUTER_API_KEY` | OpenRouter |
+| `COHERE_API_KEY` | Cohere |
+| `AZURE_OPENAI_API_KEY` | Azure OpenAI |
+| `AZURE_OPENAI_ENDPOINT` | Azure OpenAI |
+
+You only need **one** provider configured to get started.
+
+### Supported Models
+
+Provider configuration is managed in [`config.yaml`](config.yaml):
+
+| Provider | Models |
+|---|---|
+| **Google Gemini** | `gemini-1.5-flash`, `gemini-1.5-pro`, `gemini-2.0-flash-exp` |
+| **Groq** | `llama-3.3-70b-versatile`, `llama-3.1-8b-instant`, `mixtral-8x7b-32768`, `gemma2-9b-it` |
+| **GitHub Models** | `gpt-4o`, `gpt-4o-mini`, `Mistral-large` |
+| **NVIDIA NIM** | `meta/llama-3.1-70b-instruct`, `meta/llama-3.1-8b-instruct`, `mistralai/mixtral-8x22b-instruct` |
+| **OpenRouter** | `openai/gpt-4o-mini`, `anthropic/claude-3.5-sonnet`, `google/gemini-1.5-flash`, `meta-llama/llama-3.1-8b-instruct:free` |
+| **Cohere** | `command-r-plus`, `command-r` |
+| **Azure OpenAI** | `gpt-4o`, `gpt-4o-mini`, `gpt-35-turbo` |
 
 ## 📜 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
+
 *Built with ❤️ for AI Engineers and DevOps Professionals.*
