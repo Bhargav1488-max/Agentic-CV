@@ -1,0 +1,34 @@
+providers:
+  Google_Gemini:
+    api_key_env: GOOGLE_API_KEY
+    models: [gemini-1.5-flash, gemini-1.5-pro, gemini-2.0-flash-exp]
+    default_model: gemini-1.5-flash
+  Groq:
+    api_key_env: GROQ_API_KEY
+    models: [llama-3.3-70b-versatile, llama-3.1-8b-instant, mixtral-8x7b-32768, gemma2-9b-it]
+    default_model: llama-3.3-70b-versatile
+  GitHub_Models:
+    api_key_env: GITHUB_TOKEN
+    models: [gpt-4o, gpt-4o-mini, Mistral-large]
+    default_model: gpt-4o-mini
+  NVIDIA_NIM:
+    api_key_env: NVIDIA_API_KEY
+    models: [meta/llama-3.1-70b-instruct, meta/llama-3.1-8b-instruct, mistralai/mixtral-8x22b-instruct-v0.1]
+    default_model: meta/llama-3.1-70b-instruct
+  OpenRouter:
+    api_key_env: OPENROUTER_API_KEY
+    models: [openai/gpt-4o-mini, anthropic/claude-3.5-sonnet, google/gemini-1.5-flash, meta-llama/llama-3.1-8b-instruct:free]
+    default_model: openai/gpt-4o-mini
+  Cohere:
+    api_key_env: COHERE_API_KEY
+    models: [command-r-plus, command-r]
+    default_model: command-r
+  Azure_OpenAI:
+    api_key_env: AZURE_OPENAI_API_KEY
+    base_url_env: AZURE_OPENAI_ENDPOINT
+    models: [gpt-4o, gpt-4o-mini, gpt-35-turbo]
+    default_model: gpt-4o
+
+languages: [English, French]
+cv_templates: [Modern, Classic, ATS-Safe]
+max_upload_mb: 5
