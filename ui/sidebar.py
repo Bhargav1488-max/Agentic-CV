@@ -73,3 +73,7 @@ def render_sidebar():
     templates = config_loader.get_templates()
     selected_template = st.sidebar.selectbox("🎨 CV Template", templates)
     st.session_state["template"] = selected_template
+    
+    page_lengths = ["1-Page", "2-Page"]
+    selected_length = st.sidebar.radio("📄 Page Length", page_lengths)
+    st.session_state["page_length"] = selected_length

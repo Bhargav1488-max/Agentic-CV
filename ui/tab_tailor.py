@@ -116,16 +116,17 @@ def render():
                         cv_data = json.loads(clean_json)
                         
                         # Generate LaTeX
-                        latex_code = latex_generator.generate_latex_cv(cv_data, template_type)
+                        page_length = st.session_state.get("page_length", "1-Page")
+                        latex_code = latex_generator.generate_latex_cv(cv_data, template_type, page_length)
                         st.session_state["latest_cv_tex"] = latex_code
                         
                         # Compile
-                        pdf_path = latex_compiler.compile_latex(latex_code, output_filename="tailored_cv")
+                        pdf_path, error_msg = latex_compiler.compile_latex(latex_code, output_filename="tailored_cv")
                         if pdf_path:
                             st.session_state["latest_cv_pdf"] = pdf_path
                             st.success("PDF compiled successfully! Check the CV Preview tab.")
                         else:
-                            st.error("LaTeX compilation failed.")
+                            st.error(error_msg)
                             
                     except json.JSONDecodeError as e:
                         st.error("Failed to parse LLM response into JSON. The LLM might not have returned proper JSON format.")
@@ -147,13 +148,21 @@ def render():
                     st.error(response_text)
                 else:
                     st.success("Cover Letter Generated! Compiling LaTeX...")
-                    latex_code = latex_generator.generate_latex_cl(response_text)
-                    st.session_state["latest_cl_tex"] = latex_code
-                    st.session_state["latest_cl_text"] = response_text
                     
-                    pdf_path = latex_compiler.compile_latex(latex_code, output_filename="tailored_cl")
+                    # Extract JSON payload
+                    clean_json = clean_json_response(response_text)
+                    try:
+                        cl_data = json.loads(clean_json)
+                    except json.JSONDecodeError:
+                        cl_data = {"name": "Your Name", "contact": [], "body": response_text}
+                        
+                    latex_code = latex_generator.generate_latex_cl(cl_data)
+                    st.session_state["latest_cl_tex"] = latex_code
+                    st.session_state["latest_cl_text"] = cl_data.get("body", response_text)
+                    
+                    pdf_path, error_msg = latex_compiler.compile_latex(latex_code, output_filename="tailored_cl")
                     if pdf_path:
                         st.session_state["latest_cl_pdf"] = pdf_path
                         st.success("Cover Letter PDF compiled successfully! Check the Cover Letter tab.")
                     else:
-                        st.error("LaTeX compilation failed.")
+                        st.error(error_msg)

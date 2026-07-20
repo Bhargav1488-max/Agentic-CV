@@ -20,6 +20,8 @@ Language: {language}
 
 CRITICAL: Output the CV in STRICT JSON format exactly matching this schema (no extra text, no markdown):
 {{
+  "name": "Your Name",
+  "contact": ["email@example.com", "Phone Number", "LinkedIn/GitHub", "Location"],
   "title": "Your Tailored CV Title Here (e.g. Forward Deployed Engineer | Data Science)",
   "summary": "Your tailored or original professional summary here...",
   "skills": ["Skill 1", "Skill 2", "Skill 3"],
@@ -34,7 +36,17 @@ CRITICAL: Output the CV in STRICT JSON format exactly matching this schema (no e
         "Bullet point 2"
       ]
     }}
-  ]
+  ],
+  "education": [
+    {{
+      "degree": "Degree Name",
+      "institution": "University/School",
+      "dates": "Start - End",
+      "location": "Location"
+    }}
+  ],
+  "certifications": ["Cert 1", "Cert 2"],
+  "languages": ["Lang 1", "Lang 2"]
 }}
 """
 
@@ -51,5 +63,10 @@ Target Role: {role}
 Company: {company}
 Language: {language}
 
-Output just the raw cover letter text, properly formatted. No JSON, no markdown code blocks, just the text.
+CRITICAL: Output the result in STRICT JSON format exactly matching this schema:
+{{
+  "name": "Your Name (extracted from CV)",
+  "contact": ["email@example.com", "Phone", "Location"],
+  "body": "The complete raw text of the cover letter..."
+}}
 """

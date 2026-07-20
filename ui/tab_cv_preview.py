@@ -16,20 +16,29 @@ def display_pdf(file_path):
 def render():
     st.header("📄 CV Preview")
     
-    if "latest_cv_pdf" not in st.session_state or not st.session_state["latest_cv_pdf"]:
+    tex_content = st.session_state.get("latest_cv_tex", "")
+    pdf_path = st.session_state.get("latest_cv_pdf", None)
+    
+    if not tex_content and not pdf_path:
         st.info("Your generated CV will appear here. Go to 'Tailor Mode' or 'Manual Build' to generate one.")
         return
         
-    pdf_path = st.session_state["latest_cv_pdf"]
-    tex_content = st.session_state.get("latest_cv_tex", "")
-    
     col1, col2 = st.columns(2)
+    
     with col1:
-        with open(pdf_path, "rb") as f:
-            st.download_button("⬇️ Download PDF", data=f, file_name="Tailored_CV.pdf", mime="application/pdf")
+        if pdf_path and os.path.exists(pdf_path):
+            with open(pdf_path, "rb") as f:
+                st.download_button("⬇️ Download PDF", data=f, file_name="Tailored_CV.pdf", mime="application/pdf")
+        else:
+            st.warning("⚠️ PDF compilation failed or not run. You can still download the LaTeX source.")
+            
     with col2:
-        st.download_button("⬇️ Download .tex", data=tex_content, file_name="Tailored_CV.tex", mime="text/plain")
+        if tex_content:
+            st.download_button("⬇️ Download .tex", data=tex_content, file_name="Tailored_CV.tex", mime="text/plain")
         
     st.divider()
     
-    display_pdf(pdf_path)
+    if pdf_path and os.path.exists(pdf_path):
+        display_pdf(pdf_path)
+    else:
+        st.info("Upload the downloaded .tex file to an online editor like [Overleaf](https://www.overleaf.com) to generate your PDF.")

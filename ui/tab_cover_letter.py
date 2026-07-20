@@ -14,20 +14,25 @@ def display_pdf(file_path):
 def render():
     st.header("✉️ Cover Letter Preview")
     
-    if "latest_cl_pdf" not in st.session_state or not st.session_state["latest_cl_pdf"]:
+    tex_content = st.session_state.get("latest_cl_tex", "")
+    pdf_path = st.session_state.get("latest_cl_pdf", None)
+    cl_text = st.session_state.get("latest_cl_text", "")
+    
+    if not tex_content and not pdf_path:
         st.info("Your generated Cover Letter will appear here. Go to 'Tailor Mode' to generate one.")
         return
         
-    pdf_path = st.session_state["latest_cl_pdf"]
-    tex_content = st.session_state.get("latest_cl_tex", "")
-    cl_text = st.session_state.get("latest_cl_text", "")
-    
     col1, col2 = st.columns(2)
     with col1:
-        with open(pdf_path, "rb") as f:
-            st.download_button("⬇️ Download CL PDF", data=f, file_name="Cover_Letter.pdf", mime="application/pdf")
+        if pdf_path and os.path.exists(pdf_path):
+            with open(pdf_path, "rb") as f:
+                st.download_button("⬇️ Download CL PDF", data=f, file_name="Cover_Letter.pdf", mime="application/pdf")
+        else:
+            st.warning("⚠️ PDF compilation failed or not run. You can still download the LaTeX source.")
+            
     with col2:
-        st.download_button("⬇️ Download CL .tex", data=tex_content, file_name="Cover_Letter.tex", mime="text/plain")
+        if tex_content:
+            st.download_button("⬇️ Download CL .tex", data=tex_content, file_name="Cover_Letter.tex", mime="text/plain")
         
     st.divider()
     
@@ -35,4 +40,7 @@ def render():
     with st.expander("View/Edit Raw Text", expanded=False):
         st.text_area("Cover Letter Text", height=300, value=cl_text)
         
-    display_pdf(pdf_path)
+    if pdf_path and os.path.exists(pdf_path):
+        display_pdf(pdf_path)
+    else:
+        st.info("Upload the downloaded .tex file to an online editor like [Overleaf](https://www.overleaf.com) to generate your PDF.")

@@ -3,7 +3,7 @@ import json
 import ast
 from modules import utils
 
-def generate_latex_cv(cv_data, template_type):
+def generate_latex_cv(cv_data, template_type, page_length="1-Page"):
     summary = utils.escape_latex(cv_data.get("summary", ""))
     
     # Process Skills
@@ -19,12 +19,10 @@ def generate_latex_cv(cv_data, template_type):
     experience_latex = ""
     exp_data = cv_data.get("experience", [])
     
-    # Sometimes LLM wraps dicts in strings inside the list, try to parse
     parsed_exp = []
     for exp in exp_data:
         if isinstance(exp, str):
             try:
-                # Replace single quotes with double quotes for valid json, or use literal_eval
                 exp = ast.literal_eval(exp)
             except:
                 pass
@@ -47,19 +45,63 @@ def generate_latex_cv(cv_data, template_type):
                 highlights = [highlights]
                 
         for point in highlights:
-            # We don't want to double escape if LLM used \textbf{}, so we are careful
-            # but utils.escape_latex should handle basic chars like % & $
             pt = utils.escape_latex(str(point))
             experience_latex += f"    \\item {pt}\n"
         experience_latex += "\\end{itemize}\n\n"
 
-    title = utils.escape_latex(cv_data.get("title", "AI Engineer | Multi-Agent Systems & RAG"))
+    # Dynamic Personal Details
+    name = utils.escape_latex(cv_data.get("name", "Your Name"))
+    title = utils.escape_latex(cv_data.get("title", "Professional Title"))
+    
+    contact_list = cv_data.get("contact", [])
+    contact_str = " $\\vert$ ".join([utils.escape_latex(str(c)) for c in contact_list])
+    
+    # Process Education
+    education_latex = ""
+    edu_data = cv_data.get("education", [])
+    for edu in edu_data:
+        degree = utils.escape_latex(edu.get("degree", ""))
+        institution = utils.escape_latex(edu.get("institution", ""))
+        dates = utils.escape_latex(edu.get("dates", ""))
+        location = utils.escape_latex(edu.get("location", ""))
+        education_latex += f"\\role{{{degree}}}{{{institution}}}{{{dates}}}{{{location}}}\n\\vspace{{2pt}}\n"
+
+    # Process Certifications
+    certs_list = cv_data.get("certifications", [])
+    if isinstance(certs_list, str):
+        try:
+            certs_list = ast.literal_eval(certs_list)
+        except:
+            certs_list = [certs_list]
+    certs_latex = "\\begin{itemize}[label={}]\n"
+    for cert in certs_list:
+        certs_latex += f"    \\item {utils.escape_latex(str(cert))}\n"
+    certs_latex += "\\end{itemize}\n"
+
+    # Process Languages
+    langs_list = cv_data.get("languages", [])
+    if isinstance(langs_list, str):
+        try:
+            langs_list = ast.literal_eval(langs_list)
+        except:
+            langs_list = [langs_list]
+    langs_str = " $\\vert$ ".join([utils.escape_latex(str(l)) for l in langs_list])
+
+    # Dynamic Page Formatting
+    if page_length == "1-Page":
+        margin = "1.0cm"
+        itemsep = "0pt"
+        topsep = "1pt"
+    else:
+        margin = "2.0cm"
+        itemsep = "3pt"
+        topsep = "4pt"
 
     # Injecting into the user's specific LaTeX Template
     tex = r"""\documentclass[a4paper,10pt]{article}
 
 % ---------- PACKAGES ----------
-\usepackage[margin=1.5cm]{geometry}
+\usepackage[margin=""" + margin + r"""]{geometry}
 \usepackage{enumitem}
 \usepackage{titlesec}
 \usepackage[hidelinks]{hyperref}
@@ -77,7 +119,7 @@ def generate_latex_cv(cv_data, template_type):
   {}{0em}{}[\vspace{-0.6em}\rule{\textwidth}{0.6pt}\vspace{-0.2em}]
 \titlespacing{\section}{0pt}{8pt}{4pt}
 
-\setlist[itemize]{leftmargin=1.2em, itemsep=1pt, topsep=2pt}
+\setlist[itemize]{leftmargin=1.2em, itemsep=""" + itemsep + r""", topsep=""" + topsep + r"""}
 
 \pagestyle{empty}
 \setlength{\parindent}{0pt}
@@ -92,13 +134,10 @@ def generate_latex_cv(cv_data, template_type):
 
 % ========================= HEADER =========================
 \begin{center}
-    {\LARGE \textbf{Bhargav Chollangi}}\\[3pt]
+    {\LARGE \textbf{""" + name + r"""}}\\[3pt]
     {\large """ + title + r"""}\\[5pt]
     \small
-    Paris, France $\vert$ \href{mailto:chollangibhargav5@gmail.com}{chollangibhargav5@gmail.com} $\vert$ +33 7 45 56 88 80\\
-    \href{https://linkedin.com/in/bhargav-chollangi-47871b271}{linkedin.com/in/bhargav-chollangi} $\vert$
-    \href{https://github.com/Bhargav1488-max}{github.com/Bhargav1488-max}\\[2pt]
-    \textbf{Work Authorization:} France Talent Passport (Passeport Talent) work visa -- No sponsorship required
+    """ + contact_str + r"""
 \end{center}
 
 % ========================= SUMMARY =========================
@@ -117,30 +156,32 @@ def generate_latex_cv(cv_data, template_type):
 """ + experience_latex + r"""
 % ========================= EDUCATION =========================
 \section{Education}
-\role{MSc in International Marketing and Data Analytics }{Paris School Of Business, France}{Jan 2023 -- Aug 2023}{Paris, France}
-\vspace{2pt}
-\role{Bachelor of Engineering in Computer Science}{}{2017 -- 2021} {India}
+""" + education_latex + r"""
 
 % ========================= CERTIFICATIONS =========================
 \section{Certifications}
-\begin{itemize}[label={}]
-    \item Microsoft Certified: Azure Data Engineer Associate (Databricks)
-    \item Microsoft Certified: Azure Network Engineer Associate (AZ-700)
-    \item DeepLearning.AI: AI For Everyone (Coursera) $\vert$ Hugging Face: Transformers Course $\vert$ edX: Intro to DevOps
-\end{itemize}
+""" + certs_latex + r"""
 
 % ========================= LANGUAGES =========================
 \section{Languages}
-English (Bilingual) $\vert$ Telugu (Native) $\vert$ Hindi (Native) $\vert$ French (B1)
+""" + langs_str + r"""
 
 \end{document}
 """
     return tex
 
-def generate_latex_cl(cl_text):
+def generate_latex_cl(cl_data):
+    if isinstance(cl_data, str):
+        cl_data = {"name": "Your Name", "contact": [], "body": cl_data}
+        
+    cl_text = cl_data.get("body", "")
     # Handle basic line breaks
     cl_text = cl_text.replace('\n', '\n\n')
     safe_text = utils.escape_latex(cl_text)
+    
+    name = utils.escape_latex(cl_data.get("name", "Your Name"))
+    contact_list = cl_data.get("contact", [])
+    contact_str = " $\\cdot$ ".join([utils.escape_latex(str(c)) for c in contact_list])
     
     tex = r"""\documentclass[a4paper,11pt]{article}
 \usepackage[margin=2.5cm]{geometry}
@@ -155,8 +196,8 @@ def generate_latex_cl(cl_text):
 \begin{document}
 
 \begin{center}
-    {\LARGE \textbf{Bhargav Chollangi}}\\[5pt]
-    Paris, France $\cdot$ +33 7 45 56 88 80 $\cdot$ chollangibhargav5@gmail.com
+    {\LARGE \textbf{""" + name + r"""}}\\[5pt]
+    """ + contact_str + r"""
 \end{center}
 
 \vspace{1em}

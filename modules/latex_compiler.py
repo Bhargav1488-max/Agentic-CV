@@ -20,7 +20,11 @@ def compile_latex(tex_content, output_filename="output"):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
-        return pdf_path
+        return pdf_path, None
+    except FileNotFoundError:
+        return None, "LaTeX compiler ('pdflatex') not found. Please install [MiKTeX](https://miktex.org/download) or [TeX Live](https://tug.org/texlive/windows.html) and ensure it is in your system PATH, or use Docker."
+    except subprocess.CalledProcessError as e:
+        error_output = e.stdout.decode('utf-8', errors='ignore') if e.stdout else str(e)
+        return None, f"LaTeX compilation error:\n```text\n{error_output[-1000:]}\n```"
     except Exception as e:
-        print(f"LaTeX compilation failed: {e}")
-        return None
+        return None, f"LaTeX compilation failed: {e}"
