@@ -23,7 +23,7 @@ WORKDIR /app
 # ---- Stage 2: Python dependencies ----
 FROM base AS builder
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org -r requirements.txt
 
 # ---- Stage 3: Runtime ----
 FROM base AS runtime
