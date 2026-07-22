@@ -26,13 +26,13 @@ def render():
     with col1:
         if pdf_path and os.path.exists(pdf_path):
             with open(pdf_path, "rb") as f:
-                st.download_button("⬇️ Download CL PDF", data=f, file_name="Cover_Letter.pdf", mime="application/pdf")
+                st.download_button("⬇️ Download PDF", data=f, file_name="AI-Powered_Job_Application_Engine_saved_Cover_Letter.pdf", mime="application/pdf")
         else:
             st.warning("⚠️ PDF compilation failed or not run. You can still download the LaTeX source.")
             
     with col2:
         if tex_content:
-            st.download_button("⬇️ Download CL .tex", data=tex_content, file_name="Cover_Letter.tex", mime="text/plain")
+            st.download_button("⬇️ Download .tex", data=tex_content, file_name="AI-Powered_Job_Application_Engine_saved_Cover_Letter.tex", mime="text/plain")
         
     st.divider()
     

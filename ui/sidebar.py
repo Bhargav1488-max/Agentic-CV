@@ -26,13 +26,10 @@ def render_sidebar():
         if default_model in models:
             default_idx = models.index(default_model)
             
-        use_manual_model = st.sidebar.checkbox("Manually Enter Model")
+        selected_model_dropdown = st.sidebar.selectbox("🧠 Model", models, index=default_idx)
+        selected_model_manual = st.sidebar.text_input("🧠 Or Enter Custom Model (Overrides dropdown)")
+        selected_model = selected_model_manual if selected_model_manual.strip() else selected_model_dropdown
         
-        if use_manual_model:
-            selected_model = st.sidebar.text_input("🧠 Model (Manual Entry)", default_model)
-        else:
-            selected_model = st.sidebar.selectbox("🧠 Model", models, index=default_idx)
-            
         st.session_state["selected_provider"] = selected_provider
         st.session_state["selected_model"] = selected_model
         
@@ -70,9 +67,8 @@ def render_sidebar():
     selected_lang = st.sidebar.radio("🌍 Language", languages)
     st.session_state["language"] = selected_lang
     
-    templates = config_loader.get_templates()
-    selected_template = st.sidebar.selectbox("🎨 CV Template", templates)
-    st.session_state["template"] = selected_template
+    # CV Template removed per request
+    st.session_state["template"] = "Modern"
     
     page_lengths = ["1-Page", "2-Page"]
     selected_length = st.sidebar.radio("📄 Page Length", page_lengths)

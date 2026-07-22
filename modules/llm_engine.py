@@ -20,7 +20,8 @@ def generate_text(provider, model, prompt, api_key, temperature=0.7):
                     temperature=temperature,
                 )
             )
-            return response.text
+            # Gemini might not have simple token counts in this API version, default 0
+            return response.text, 0, 0
             
         elif provider == "Groq":
             client = Groq(api_key=api_key)
@@ -29,7 +30,10 @@ def generate_text(provider, model, prompt, api_key, temperature=0.7):
                 messages=[{"role": "user", "content": prompt}],
                 temperature=temperature
             )
-            return completion.choices[0].message.content
+            usage = completion.usage
+            in_tokens = usage.prompt_tokens if usage else 0
+            out_tokens = usage.completion_tokens if usage else 0
+            return completion.choices[0].message.content, in_tokens, out_tokens
             
         elif provider == "Cohere":
             co = cohere.Client(api_key=api_key)
@@ -38,7 +42,8 @@ def generate_text(provider, model, prompt, api_key, temperature=0.7):
                 model=model,
                 temperature=temperature
             )
-            return response.generations[0].text
+            # Cohere meta for billing contains token counts depending on API version
+            return response.generations[0].text, 0, 0
             
         elif provider == "GitHub_Models":
             # Using OpenAI compatible endpoint
@@ -52,7 +57,10 @@ def generate_text(provider, model, prompt, api_key, temperature=0.7):
                 messages=[{"role": "user", "content": prompt}],
                 temperature=temperature
             )
-            return completion.choices[0].message.content
+            usage = completion.usage
+            in_tokens = usage.prompt_tokens if usage else 0
+            out_tokens = usage.completion_tokens if usage else 0
+            return completion.choices[0].message.content, in_tokens, out_tokens
             
         elif provider == "NVIDIA_NIM":
             from openai import OpenAI
@@ -65,7 +73,10 @@ def generate_text(provider, model, prompt, api_key, temperature=0.7):
                 messages=[{"role": "user", "content": prompt}],
                 temperature=temperature
             )
-            return completion.choices[0].message.content
+            usage = completion.usage
+            in_tokens = usage.prompt_tokens if usage else 0
+            out_tokens = usage.completion_tokens if usage else 0
+            return completion.choices[0].message.content, in_tokens, out_tokens
             
         elif provider == "OpenRouter":
             headers = {
@@ -80,7 +91,9 @@ def generate_text(provider, model, prompt, api_key, temperature=0.7):
             }
             response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data)
             response.raise_for_status()
-            return response.json()["choices"][0]["message"]["content"]
+            res_json = response.json()
+            usage = res_json.get("usage", {})
+            return res_json["choices"][0]["message"]["content"], usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0)
             
         elif provider == "Azure_OpenAI":
             from openai import AzureOpenAI
@@ -103,18 +116,21 @@ def generate_text(provider, model, prompt, api_key, temperature=0.7):
                 messages=[{"role": "user", "content": prompt}],
                 temperature=temperature
             )
-            return completion.choices[0].message.content
+            usage = completion.usage
+            in_tokens = usage.prompt_tokens if usage else 0
+            out_tokens = usage.completion_tokens if usage else 0
+            return completion.choices[0].message.content, in_tokens, out_tokens
             
         else:
-            return f"Provider {provider} not supported or implemented."
+            return f"Provider {provider} not supported or implemented.", 0, 0
             
     except Exception as e:
-        return f"Error with {provider}: {str(e)}"
+        return f"Error with {provider}: {str(e)}", 0, 0
 
 def test_connection(provider, model, api_key):
     """Simple connection test sending a 'Hello' prompt."""
     try:
-        response = generate_text(provider, model, "Hello, are you there? Reply with exactly 'Yes'.", api_key, temperature=0.1)
+        response, _, _ = generate_text(provider, model, "Hello, are you there? Reply with exactly 'Yes'.", api_key, temperature=0.1)
         if response.startswith("Error"):
             return False, response
         return True, "Connection successful! " + response
